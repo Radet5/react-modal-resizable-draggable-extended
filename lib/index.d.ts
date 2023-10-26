@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, ReactNode } from 'react';
 import './index.css';
 import Modal from './model';
 interface PropTypes {
@@ -22,6 +22,15 @@ interface PropTypes {
     onRequestMinimise?: () => void;
     onRequestRecover?: () => void;
     onFocus?: () => void;
+    onResize?: ({ height, width }: {
+        height?: number;
+        width?: number;
+    }) => void;
+    onMoved?: ({ left, top }: {
+        left: number;
+        top: number;
+    }) => void;
+    children: ReactNode;
 }
 interface StateTypes {
     width: number;

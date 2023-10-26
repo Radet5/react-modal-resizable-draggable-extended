@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component, Fragment, ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import Resizer from './resize';
@@ -25,6 +25,9 @@ interface PropTypes {
 	onRequestMinimise?: () => void;
 	onRequestRecover?: () => void;
 	onFocus?: () => void;
+	onResize?: ({ height, width }: {height?: number, width?: number}) => void;
+	onMoved?: ({ left, top }: { left: number; top: number; }) => void;
+	children: ReactNode;
 }
 
 
@@ -113,6 +116,9 @@ class FlexibleModal extends Component<PropTypes, StateTypes> {
 
 	onMouseUp(e: { stopPropagation: () => void; }) {
 		document.removeEventListener('mousemove', this.onMouseMove);
+		if (this.state.isDragging == true && this.props.onMoved) {
+			this.props.onMoved({ top: this.state.top, left: this.state.left })
+		}
 		this.setState({ isDragging: false });
 		this.setState({ isResizing: false });
 		e.stopPropagation();
@@ -158,14 +164,23 @@ class FlexibleModal extends Component<PropTypes, StateTypes> {
 		let node = ReactDOM.findDOMNode(this.node_modal) as HTMLElement;
 		let minWidth = mWidth ? mWidth : 200;
 		let minHeight = mHeight ? mHeight : 100;
+		let changedHeight, changedWidth;
 		if (!disableHorizontalResize && node && clientX > node.offsetLeft + minWidth) {
+			changedWidth = clientX - node.offsetLeft + 16 / 2;
 			this.setState({
-				width: clientX - node.offsetLeft + 16 / 2
+				width: changedWidth,
 			});
 		}
 		if (!disableVerticalResize && node && clientY > node.offsetTop + minHeight) {
+			changedHeight = clientY - node.offsetTop + 16 / 2;
 			this.setState({
-				height: clientY - node.offsetTop + 16 / 2
+				height: changedHeight,
+			});
+		}
+		if (this.props.onResize && (changedHeight || changedWidth)) {
+			this.props.onResize({
+				height: changedHeight ? changedHeight : this.state.height,
+				width: changedWidth ? changedWidth : this.state.width,
 			});
 		}
 	}
